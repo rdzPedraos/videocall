@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	:root {
+		--base: 25 27 40;
+		--primary: 46 120 213;
+		--white: 253 252 254;
+		--success: 54 216 124;
+		--error: 223 61 61;
+	}
+}
