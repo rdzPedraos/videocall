@@ -2,12 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url("https://fonts.googleapis.com/css2?family=Carter+One&display=swap");
+
 @layer base {
-	:root {
-		--base: 25 27 40;
-		--primary: 46 120 213;
-		--white: 253 252 254;
-		--success: 54 216 124;
-		--error: 223 61 61;
-	}
+    :root {
+        --base-900: 2 0 21;
+        --base-700: 23 15 36;
+        --base-500: 37 28 59;
+
+        --primary: 198 132 168;
+        --white: 254 254 254;
+        --success: 61 201 114;
+        --danger: 223 61 61;
+    }
 }

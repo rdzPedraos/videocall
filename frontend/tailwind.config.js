@@ -5,11 +5,13 @@ export default {
 	theme: {
 		extend: {
 			colors: {
-				base: 'rgb( var(--base) / <alpha-value> )',
+				'base-900': 'rgb( var(--base-900) / <alpha-value> )',
+				'base-700': 'rgb( var(--base-700) / <alpha-value> )',
+				'base-500': 'rgb( var(--base-500) / <alpha-value> )',
 				primary: 'rgb( var(--primary) / <alpha-value> )',
 				white: 'rgb( var(--white) / <alpha-value> )',
 				success: 'rgb( var(--success) / <alpha-value> )',
-				error: 'rgb( var(--error) / <alpha-value> )',
+				danger: 'rgb( var(--danger) / <alpha-value> )',
 			},
 		},
 	},
