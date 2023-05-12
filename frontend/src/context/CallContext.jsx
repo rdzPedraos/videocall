@@ -1,14 +1,15 @@
-import { useState, createContext, useEffect } from 'react';
+import { useState, createContext, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 
 import Peer from 'peerjs';
 import { io } from 'socket.io-client';
 
 const CallContext = createContext();
-const SOCKET = io('http://localhost:5001');
-const PEER = new Peer();
 
 function CallProvider({ children }) {
+	const SOCKET = useMemo(() => io('http://localhost:5001'), []);
+	const PEER = useMemo(() => new Peer(), []);
+
 	const [id, setId] = useState(null);
 	const [enabled, setEnabled] = useState(true);
 	const [name, setName] = useState('Guest');
@@ -51,12 +52,11 @@ function CallProvider({ children }) {
 			);
 
 			SOCKET.on('closeCall', () => {
-				console.log('estoy dentro del peer');
 				call.close();
 				setRemoteUser({});
 			});
 		});
-	}, []);
+	}, [stream, PEER, SOCKET]);
 
 	useEffect(() => {
 		SOCKET.on('callTo', ({ remoteId }) => {
@@ -68,19 +68,23 @@ function CallProvider({ children }) {
 			call.on(
 				'stream',
 				stream => {
-					setRemoteUser(pre => ({ stream, ...pre }));
+					setRemoteUser(pre => ({ ...pre, stream }));
 					setWaiting(false);
 				},
 				err => console.log({ err })
 			);
 
-			SOCKET.on('closeCall', () => {
-				console.log('estoy dentro del socket');
+			/* call.on('close', () => {
+				setRemoteUser({});
+			}); */
+
+			/* SOCKET.on('closeCall', () => {
+				SOCKET.off('closeCall');
 				call.close();
 				setRemoteUser({});
-			});
+			}); */
 		});
-	}, []);
+	}, [PEER, SOCKET, stream]);
 
 	// * Cuando desee buscar una nueva conexión
 	useEffect(() => {
@@ -98,7 +102,6 @@ function CallProvider({ children }) {
 				setName,
 				stream,
 				remoteUser,
-
 				enabled,
 				waiting,
 				setWaiting,
