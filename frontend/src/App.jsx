@@ -47,7 +47,7 @@ function App() {
 
 	return navigator.mediaDevices ? (
 		<>
-			<section className='lg:flex lg:w-2/3 lg:min-h-[200px] lg:gap-4 m-auto mt-16 bg-red-200'>
+			<section className='lg:flex lg:w-2/3 lg:min-h-[200px] lg:gap-4 m-auto mt-16'>
 				{/* los videos no toman el tamaño del padre D: */}
 				<Profile
 					className='flex-1'
@@ -57,7 +57,7 @@ function App() {
 					stream={localStream}
 					mutedVideo={true}
 				/>
-				<Profile className='flex-1' name='Carlitos' stream={remoteStream} />
+				<Profile className='flex-1' stream={remoteStream} showName />
 			</section>
 
 			<section className='flex justify-center mt-16'>
