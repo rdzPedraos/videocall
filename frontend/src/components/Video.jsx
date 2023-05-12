@@ -13,7 +13,7 @@ function Video({ stream, className, ...props }) {
 
 	return (
 		<div
-			className={`rounded-lg overflow-hidden bg-base-500 h-full ${className}`}
+			className={`grid h-full place-items-center rounded-lg overflow-hidden bg-base-500 ${className}`}
 		>
 			{stream ? (
 				<video
@@ -24,9 +24,7 @@ function Video({ stream, className, ...props }) {
 					{...props}
 				/>
 			) : (
-				<div className='w-full h-full grid place-items-center'>
-					<Spinner />
-				</div>
+				<Spinner />
 			)}
 		</div>
 	);

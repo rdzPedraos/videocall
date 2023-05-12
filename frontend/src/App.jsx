@@ -1,63 +1,30 @@
-import Peer from 'peerjs';
-import { useEffect, useMemo, useState } from 'react';
+import { useContext } from 'react';
+import { CallContext } from './context/CallContext';
 
 import Profile from './components/Profile';
 import ButtonsGroup from './partials/ButtonsGroup';
 import Error from './partials/Error';
 
 function App() {
-	const [localStream, setLocalStream] = useState(null);
-	const [remoteStream, setRemoteStream] = useState(null);
+	const {
+		stream: localStream,
+		remoteUser,
+		enabled,
+		waiting,
+	} = useContext(CallContext);
 
-	const [localUserId, setLocalUserId] = useState(null);
-	const [remoteUserId, setRemoteUserId] = useState(null);
-
-	const [name, setName] = useState('');
-
-	const peer = useMemo(() => new Peer(), []);
-	peer.on('open', id => {
-		setLocalUserId(id);
-	});
-
-	useEffect(() => {
-		if (navigator.mediaDevices) {
-			navigator.mediaDevices
-				.getUserMedia({
-					audio: true,
-					video: { width: 1280, height: 1280 },
-				})
-				.then(stream => {
-					setLocalStream(stream);
-				})
-				.catch(error => console.log(error));
-		}
-	}, []);
-
-	useEffect(() => {
-		peer.on('call', call => {
-			call.answer(localStream);
-
-			call.on(
-				'stream',
-				remoteStream => setRemoteStream(remoteStream),
-				err => console.log(err)
-			);
-		});
-	}, [peer, localStream]);
-
-	return navigator.mediaDevices ? (
+	console.log(waiting);
+	return enabled ? (
 		<>
-			<section className='lg:flex lg:w-2/3 lg:min-h-[200px] lg:gap-4 m-auto mt-16'>
-				{/* los videos no toman el tamaño del padre D: */}
+			<section className='lg:flex lg:w-2/3 lg:min-h-[300px] lg:gap-4 m-auto mt-16'>
+				<Profile stream={localStream} mutedVideo className='flex-1' />
+
 				<Profile
 					className='flex-1'
-					name={name}
-					onChangeName={name => setName(name)}
-					editByDefault={true}
-					stream={localStream}
-					mutedVideo={true}
+					name={remoteUser?.name}
+					stream={remoteUser?.stream}
+					showName
 				/>
-				<Profile className='flex-1' stream={remoteStream} showName />
 			</section>
 
 			<section className='flex justify-center mt-16'>

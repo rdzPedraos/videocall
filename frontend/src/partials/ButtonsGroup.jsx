@@ -8,8 +8,12 @@ import {
 	VideoCameraIcon,
 	ArrowPathIcon,
 } from '@heroicons/react/24/outline';
+import { useContext } from 'react';
+import { CallContext } from '../context/CallContext';
 
 function ButtonsGroup({ className, ...props }) {
+	const { setWaiting } = useContext(CallContext);
+
 	return (
 		<section
 			className={`flex items-center p-5  rounded-2xl border-2 border-base-500 bg-base-500 bg-opacity-30 ${className}`}
@@ -24,7 +28,7 @@ function ButtonsGroup({ className, ...props }) {
 				<Button variant='danger'>
 					<PhoneXMarkIcon className='w-6 h-6' />
 				</Button>
-				<Button variant='success'>
+				<Button variant='success' onClick={() => setWaiting(true)}>
 					<ArrowPathIcon className='w-6 h-6' />
 				</Button>
 				<Button>

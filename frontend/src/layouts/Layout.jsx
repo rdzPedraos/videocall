@@ -1,15 +1,15 @@
 import PropTypes from 'prop-types';
 
-import { UserProvider } from '../context/UserContext';
+import { CallProvider } from '../context/CallContext';
 import Header from './Header';
 
 function Layout({ children }) {
 	return (
 		<div className='min-h-screen flex flex-col bg-base-900 text-white'>
-			<UserProvider>
+			<CallProvider>
 				<Header />
 				<main>{children}</main>
-			</UserProvider>
+			</CallProvider>
 		</div>
 	);
 }
