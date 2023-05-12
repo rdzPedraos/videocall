@@ -4,6 +4,7 @@ const socket = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
+
 const io = socket(server, {
 	cors: {
 		origin: 'http://localhost:3000',
@@ -27,7 +28,10 @@ io.on('connection', socket => {
 
 		if (users.length !== 0) {
 			const remoteUser = users.shift();
-			socket.emit('callTo', { remoteId: remoteUser.peerId });
+
+			if (remoteUser.id !== socket.id) {
+				socket.emit('callTo', { remoteId: remoteUser.peerId });
+			}
 		} else {
 			users.push({ id: socket.id, peerId });
 		}
