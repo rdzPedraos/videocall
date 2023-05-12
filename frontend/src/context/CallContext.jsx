@@ -6,7 +6,7 @@ import { io } from 'socket.io-client';
 
 const CallContext = createContext();
 const SOCKET = io('http://localhost:5001');
-const PEER = new Peer({});
+const PEER = new Peer();
 
 function CallProvider({ children }) {
 	const [id, setId] = useState(null);
@@ -63,20 +63,20 @@ function CallProvider({ children }) {
 			console.log('----------------- CALLTO EVENT --------------');
 			console.log(remoteId);
 
-			const conn = PEER.call(remoteId, stream);
+			const call = PEER.call(remoteId, stream);
 
-			conn.on(
+			call.on(
 				'stream',
 				stream => {
 					setRemoteUser(pre => ({ stream, ...pre }));
 					setWaiting(false);
 				},
-				err => console.error(err)
+				err => console.log({ err })
 			);
 
 			SOCKET.on('closeCall', () => {
 				console.log('estoy dentro del socket');
-				conn.close();
+				call.close();
 				setRemoteUser({});
 			});
 		});
