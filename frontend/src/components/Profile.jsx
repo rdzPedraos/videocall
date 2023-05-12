@@ -32,7 +32,6 @@ Profile.propTypes = {
 };
 
 Profile.defaultProps = {
-    editByDefault: false,
     mutedVideo: false,
     className: "",
     showName: false,
