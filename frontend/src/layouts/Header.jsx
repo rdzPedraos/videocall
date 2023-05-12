@@ -1,11 +1,11 @@
 import { useContext } from 'react';
-import { UserContext } from '../context/UserContext';
+import { CallContext } from '../context/CallContext';
 
 import Logo from '../components/Logo';
 import TextEdit from '../components/TextEdit';
 
 function Header() {
-	const { name, setName } = useContext(UserContext);
+	const { name, setName } = useContext(CallContext);
 
 	return (
 		<header className='flex justify-between items-center px-10'>
