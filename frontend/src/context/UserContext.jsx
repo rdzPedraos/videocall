@@ -4,17 +4,13 @@ import PropTypes from 'prop-types';
 const UserContext = createContext();
 
 function UserProvider({ children }) {
-	const [name, setName] = useState('Carlitos');
-
-	const onChangeName = name => {
-		setName(name);
-	};
+	const [name, setName] = useState(null);
 
 	return (
 		<UserContext.Provider
 			value={{
 				name: name,
-				setName: onChangeName,
+				setName,
 			}}
 		>
 			{children}
