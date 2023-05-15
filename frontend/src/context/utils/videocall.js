@@ -1,11 +1,9 @@
 function setCallConfiguration(socket, call, setRemoteUser) {
-	console.log(socket, call);
-
 	call.on(
 		'stream',
 		stream => {
-			console.log('---- conexión ----');
-			console.log(stream);
+			console.log('CALL CONNECTED*');
+
 			setRemoteUser(pre => ({ ...pre, stream }));
 		},
 		err => console.log({ err })
@@ -13,11 +11,13 @@ function setCallConfiguration(socket, call, setRemoteUser) {
 
 	socket.on('closeCall', () => {
 		call.close();
-		setRemoteUser({});
+		setRemoteUser(null);
 	});
 
 	call.on('close', () => {
-		setRemoteUser({});
+		console.log('CALL CLOSED*');
+
+		setRemoteUser(null);
 	});
 }
 

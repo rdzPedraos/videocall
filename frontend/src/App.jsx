@@ -5,27 +5,37 @@ import Profile from './components/Profile';
 import ButtonsGroup from './partials/ButtonsGroup';
 import Error from './partials/Error';
 
+import { FaceFrownIcon } from '@heroicons/react/24/outline';
+
 function App() {
 	const {
 		stream: localStream,
 		remoteUser,
-		enabled,
-		waiting,
+		mediaEnabled,
+		closeCalls,
 	} = useContext(CallContext);
 
-	console.log(waiting);
-	return enabled ? (
+	return mediaEnabled ? (
 		<>
 			<section className='lg:flex lg:w-2/3 lg:min-h-[300px] lg:gap-4 m-auto mt-16'>
 				<Profile stream={localStream} mutedVideo className='flex-1' />
 
-				<Profile
-					mutedVideo
-					className='flex-1'
-					name={remoteUser?.name}
-					stream={remoteUser?.stream}
-					showName
-				/>
+				{closeCalls ? (
+					<div className='flex-1 bg-base-500 rounded-md grid place-items-center'>
+						<div className='flex flex-col items-center animate-pulse'>
+							<FaceFrownIcon className='w-20 h-20' />
+							<p>No estás en vivo</p>
+						</div>
+					</div>
+				) : (
+					<Profile
+						mutedVideo
+						className='flex-1'
+						name={remoteUser?.name}
+						stream={remoteUser?.stream}
+						showName
+					/>
+				)}
 			</section>
 
 			<section className='flex justify-center mt-16'>

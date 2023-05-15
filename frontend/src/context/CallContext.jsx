@@ -10,47 +10,44 @@ const SOCKET = io('http://localhost:5001');
 const PEER = new Peer();
 
 function CallProvider({ children }) {
-	const [id, setId] = useState(null);
-	const [enabled, setEnabled] = useState(true);
-	const [name, setName] = useState('Guest');
+	const [peerId, setPeerId] = useState(null);
 	const [stream, setStream] = useState(null);
-	const [remoteUser, setRemoteUser] = useState({});
-	const [waiting, setWaiting] = useState(false);
+	const [remoteUser, setRemoteUser] = useState(null);
+
+	const [name, setName] = useState('Guest');
+	const [closeCalls, setCloseCalls] = useState(false);
+	const [mediaEnabled, setMediaEnabled] = useState(true);
 
 	// * Lógica, permitir acceso a cámara y video.
 	useEffect(() => {
+		PEER.on('open', id => setPeerId(id));
+
 		if (navigator.mediaDevices) {
 			navigator.mediaDevices
 				.getUserMedia({
 					audio: true,
 					video: { width: 1280, height: 1280 },
 				})
-				.then(stream => {
-					setStream(stream);
-					setWaiting(true);
-				})
+				.then(stream => setStream(stream))
 				.catch(error => {
 					console.error(error);
-					setEnabled(false);
+					setMediaEnabled(false);
 				});
-		} else setEnabled(false);
+		} else setMediaEnabled(false);
 	}, []);
 
+	// * Lógica de las llamadas
 	useEffect(() => {
-		PEER.on('open', id => {
-			console.log('he cambiado ', id);
-			setId(id);
-		});
-
 		if (stream) {
 			PEER.on('call', call => {
-				call.answer(stream);
+				console.log('RECEIVING CALL*');
 
+				call.answer(stream);
 				setCallConfiguration(SOCKET, call, setRemoteUser);
 			});
+
 			SOCKET.on('callTo', ({ remoteId }) => {
-				console.log('----------------- CALLTO EVENT --------------');
-				console.log(remoteId);
+				console.log('CALL TO: ' + remoteId);
 
 				const call = PEER.call(remoteId, stream);
 				setCallConfiguration(SOCKET, call, setRemoteUser);
@@ -58,22 +55,22 @@ function CallProvider({ children }) {
 		}
 	}, [stream]);
 
+	// * Cada que se actualice el usuario remoto:
 	useEffect(() => {
-		if (remoteUser.stream === undefined) {
-			setWaiting(true);
-		} else {
-			setWaiting(false);
+		if (peerId && remoteUser === null) {
+			SOCKET.emit('waiting', { peerId });
 		}
-	}, [remoteUser]);
+	}, [remoteUser, peerId]);
 
-	// * Cuando desee buscar una nueva conexión
+	// * Si desea cancelar todas las llamadas, quite el usuario con el que pueda estar.
 	useEffect(() => {
-		if (!waiting || id === null) return;
-
-		console.log('----------------- WAITING EVENT --------------');
-		console.log('ID: ' + id);
-		SOCKET.emit('waiting', { peerId: id });
-	}, [waiting, id]);
+		if (closeCalls) {
+			//? Se deja como un objeto vacio para que no pueda emitir un nuevo evento waitiing en el useEffect superior.
+			setRemoteUser({});
+		} else {
+			setRemoteUser(null);
+		}
+	}, [closeCalls]);
 
 	return (
 		<CallContext.Provider
@@ -82,9 +79,10 @@ function CallProvider({ children }) {
 				setName,
 				stream,
 				remoteUser,
-				enabled,
-				waiting,
-				setWaiting,
+				closeCalls,
+				mediaEnabled,
+				setRemoteUser,
+				setCloseCalls,
 			}}
 		>
 			{children}
