@@ -18,7 +18,7 @@ function CallProvider({ children }) {
 	const [stopStreaming, setStopStreaming] = useState(false);
 	const [mediaEnabled, setMediaEnabled] = useState(true);
 
-	// * Lógica, permitir acceso a cámara y video.
+	// * Lógica, permitir acceso a cámara y video. Y setear los eventos base de la llamada.
 	useEffect(() => {
 		PEER.on('open', id => setPeerId(id));
 
@@ -28,32 +28,29 @@ function CallProvider({ children }) {
 					audio: true,
 					video: { width: 1280, height: 1280 },
 				})
-				.then(stream => setStream(stream))
+				.then(stream => {
+					setStream(stream);
+
+					PEER.on('call', call => {
+						console.log('RECEIVING CALL*');
+
+						call.answer(stream);
+						setCallConfiguration(SOCKET, call, setRemoteUser);
+					});
+
+					SOCKET.on('callTo', ({ remoteId }) => {
+						console.log('CALL TO: ' + remoteId);
+
+						const call = PEER.call(remoteId, stream);
+						setCallConfiguration(SOCKET, call, setRemoteUser);
+					});
+				})
 				.catch(error => {
 					console.error(error);
 					setMediaEnabled(false);
 				});
 		} else setMediaEnabled(false);
 	}, []);
-
-	// * Lógica de las llamadas
-	useEffect(() => {
-		if (stream) {
-			PEER.on('call', call => {
-				console.log('RECEIVING CALL*');
-
-				call.answer(stream);
-				setCallConfiguration(SOCKET, call, setRemoteUser);
-			});
-
-			SOCKET.on('callTo', ({ remoteId }) => {
-				console.log('CALL TO: ' + remoteId);
-
-				const call = PEER.call(remoteId, stream);
-				setCallConfiguration(SOCKET, call, setRemoteUser);
-			});
-		}
-	}, [stream]);
 
 	// * Cada que se actualice el usuario remoto:
 	useEffect(() => {
@@ -62,10 +59,11 @@ function CallProvider({ children }) {
 		}
 	}, [remoteUser, peerId]);
 
-	// * Si desea detener la transmisión, quite el usuario con el que pueda estar.
+	// * Quita cualquier conexión con usuario remoto si está en true "stopStreaming"
 	useEffect(() => {
 		if (stopStreaming) {
 			//? Se deja como un objeto vacio para que no pueda emitir un nuevo evento waitiing en el useEffect superior.
+			SOCKET.emit('stopStreaming');
 			setRemoteUser({});
 		} else {
 			setRemoteUser(null);

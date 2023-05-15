@@ -15,6 +15,8 @@ function App() {
 		stopStreaming,
 	} = useContext(CallContext);
 
+	console.log(remoteUser);
+
 	return mediaEnabled ? (
 		<>
 			<section className='lg:flex lg:w-2/3 lg:min-h-[300px] lg:gap-4 m-auto mt-16'>
