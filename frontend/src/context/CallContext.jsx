@@ -15,7 +15,7 @@ function CallProvider({ children }) {
 	const [remoteUser, setRemoteUser] = useState(null);
 
 	const [name, setName] = useState('Guest');
-	const [closeCalls, setCloseCalls] = useState(false);
+	const [stopStreaming, setStopStreaming] = useState(false);
 	const [mediaEnabled, setMediaEnabled] = useState(true);
 
 	// * Lógica, permitir acceso a cámara y video.
@@ -64,13 +64,13 @@ function CallProvider({ children }) {
 
 	// * Si desea cancelar todas las llamadas, quite el usuario con el que pueda estar.
 	useEffect(() => {
-		if (closeCalls) {
+		if (stopStreaming) {
 			//? Se deja como un objeto vacio para que no pueda emitir un nuevo evento waitiing en el useEffect superior.
 			setRemoteUser({});
 		} else {
 			setRemoteUser(null);
 		}
-	}, [closeCalls]);
+	}, [stopStreaming]);
 
 	return (
 		<CallContext.Provider
@@ -79,10 +79,10 @@ function CallProvider({ children }) {
 				setName,
 				stream,
 				remoteUser,
-				closeCalls,
 				mediaEnabled,
 				setRemoteUser,
-				setCloseCalls,
+				stopStreaming,
+				setStopStreaming,
 			}}
 		>
 			{children}

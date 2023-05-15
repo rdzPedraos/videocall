@@ -12,7 +12,7 @@ function App() {
 		stream: localStream,
 		remoteUser,
 		mediaEnabled,
-		closeCalls,
+		stopStreaming,
 	} = useContext(CallContext);
 
 	return mediaEnabled ? (
@@ -20,7 +20,7 @@ function App() {
 			<section className='lg:flex lg:w-2/3 lg:min-h-[300px] lg:gap-4 m-auto mt-16'>
 				<Profile stream={localStream} mutedVideo className='flex-1' />
 
-				{closeCalls ? (
+				{stopStreaming ? (
 					<div className='flex-1 bg-base-500 rounded-md grid place-items-center'>
 						<div className='flex flex-col items-center animate-pulse'>
 							<FaceFrownIcon className='w-20 h-20' />

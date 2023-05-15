@@ -13,7 +13,7 @@ import { useContext } from 'react';
 import { CallContext } from '../context/CallContext';
 
 function ButtonsGroup({ className, ...props }) {
-	const { remoteUser, setRemoteUser, closeCalls, setCloseCalls } =
+	const { remoteUser, setRemoteUser, stopStreaming, setStopStreaming } =
 		useContext(CallContext);
 
 	const iconSize = 'w-6 h-6';
@@ -24,7 +24,7 @@ function ButtonsGroup({ className, ...props }) {
 			{...props}
 		>
 			<div className='text-gray-500 max-w-[250px] px-3'>
-				{closeCalls ? (
+				{stopStreaming ? (
 					<>
 						<p className='font-bold'> No estás en vivo! </p>
 						<p> Inicia tú transmisión pulsando en el botón de llamar </p>
@@ -38,14 +38,14 @@ function ButtonsGroup({ className, ...props }) {
 			</div>
 
 			<div className='flex gap-2'>
-				{closeCalls ? (
-					<Button variant='success' onClick={() => setCloseCalls(false)}>
+				{stopStreaming ? (
+					<Button variant='success' onClick={() => setStopStreaming(false)}>
 						<PhoneIcon className={iconSize + ' animate-bounce'} />
 					</Button>
 				) : (
 					<>
 						{remoteUser && (
-							<Button variant='danger' onClick={() => setCloseCalls(true)}>
+							<Button variant='danger' onClick={() => setStopStreaming(true)}>
 								<PhoneXMarkIcon className={iconSize} />
 							</Button>
 						)}
