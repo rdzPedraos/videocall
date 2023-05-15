@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 
 import Peer from 'peerjs';
 import { io } from 'socket.io-client';
+import { setCallConfiguration } from './utils/videocall';
 
 const CallContext = createContext();
+const SOCKET = io('http://localhost:5001');
+const PEER = new Peer();
 
 function CallProvider({ children }) {
-	const SOCKET = useMemo(() => io('http://localhost:5001'), []);
-	const PEER = useMemo(() => new Peer(), []);
-
 	const [id, setId] = useState(null);
 	const [enabled, setEnabled] = useState(true);
 	const [name, setName] = useState('Guest');
@@ -42,58 +42,29 @@ function CallProvider({ children }) {
 			setId(id);
 		});
 
-		PEER.on('call', call => {
-			call.answer(stream);
-
-			call.on(
-				'stream',
-				stream => {
-					setRemoteUser(pre => ({ ...pre, stream }));
-					setWaiting(false);
-				},
-				err => console.error(err)
-			);
-
-			call.on('close', () => {
-				setRemoteUser({});
-			});
-
-			SOCKET.on('closeCall', () => {
-				call.close();
-				setRemoteUser({});
-			});
-		});
-	}, [stream, PEER, SOCKET]);
-
-	useEffect(() => {
 		if (stream) {
+			PEER.on('call', call => {
+				call.answer(stream);
+
+				setCallConfiguration(SOCKET, call, setRemoteUser);
+			});
 			SOCKET.on('callTo', ({ remoteId }) => {
 				console.log('----------------- CALLTO EVENT --------------');
 				console.log(remoteId);
 
 				const call = PEER.call(remoteId, stream);
-
-				call.on(
-					'stream',
-					stream => {
-						setRemoteUser(pre => ({ ...pre, stream }));
-						setWaiting(false);
-					},
-					err => console.log({ err })
-				);
-
-				call.on('close', () => {
-					setRemoteUser({});
-				});
-
-				SOCKET.on('closeCall', () => {
-					/* SOCKET.off('closeCall'); */
-					call.close();
-					setRemoteUser({});
-				});
+				setCallConfiguration(SOCKET, call, setRemoteUser);
 			});
 		}
-	}, [PEER, SOCKET, stream]);
+	}, [stream]);
+
+	useEffect(() => {
+		if (remoteUser.stream === undefined) {
+			setWaiting(true);
+		} else {
+			setWaiting(false);
+		}
+	}, [remoteUser]);
 
 	// * Cuando desee buscar una nueva conexión
 	useEffect(() => {

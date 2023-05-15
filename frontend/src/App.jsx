@@ -20,6 +20,7 @@ function App() {
 				<Profile stream={localStream} mutedVideo className='flex-1' />
 
 				<Profile
+					mutedVideo
 					className='flex-1'
 					name={remoteUser?.name}
 					stream={remoteUser?.stream}
