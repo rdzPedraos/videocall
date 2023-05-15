@@ -58,13 +58,13 @@ function ButtonsGroup({ className, ...props }) {
 					</>
 				)}
 
-				<Button>
+				{/* <Button>
 					<MicrophoneIcon className={iconSize} />
 				</Button>
 
 				<Button>
 					<VideoCameraIcon className={iconSize} />
-				</Button>
+				</Button> */}
 			</div>
 		</section>
 	);

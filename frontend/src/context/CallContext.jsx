@@ -62,7 +62,7 @@ function CallProvider({ children }) {
 		}
 	}, [remoteUser, peerId]);
 
-	// * Si desea cancelar todas las llamadas, quite el usuario con el que pueda estar.
+	// * Si desea detener la transmisión, quite el usuario con el que pueda estar.
 	useEffect(() => {
 		if (stopStreaming) {
 			//? Se deja como un objeto vacio para que no pueda emitir un nuevo evento waitiing en el useEffect superior.
