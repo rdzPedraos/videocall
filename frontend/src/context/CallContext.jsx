@@ -47,9 +47,16 @@ function CallProvider({ children }) {
 
 			call.on(
 				'stream',
-				stream => setRemoteUser(pre => ({ ...pre, stream })),
+				stream => {
+					setRemoteUser(pre => ({ ...pre, stream }));
+					setWaiting(false);
+				},
 				err => console.error(err)
 			);
+
+			call.on('close', () => {
+				setRemoteUser({});
+			});
 
 			SOCKET.on('closeCall', () => {
 				call.close();
@@ -59,31 +66,33 @@ function CallProvider({ children }) {
 	}, [stream, PEER, SOCKET]);
 
 	useEffect(() => {
-		SOCKET.on('callTo', ({ remoteId }) => {
-			console.log('----------------- CALLTO EVENT --------------');
-			console.log(remoteId);
+		if (stream) {
+			SOCKET.on('callTo', ({ remoteId }) => {
+				console.log('----------------- CALLTO EVENT --------------');
+				console.log(remoteId);
 
-			const call = PEER.call(remoteId, stream);
+				const call = PEER.call(remoteId, stream);
 
-			call.on(
-				'stream',
-				stream => {
-					setRemoteUser(pre => ({ ...pre, stream }));
-					setWaiting(false);
-				},
-				err => console.log({ err })
-			);
+				call.on(
+					'stream',
+					stream => {
+						setRemoteUser(pre => ({ ...pre, stream }));
+						setWaiting(false);
+					},
+					err => console.log({ err })
+				);
 
-			/* call.on('close', () => {
-				setRemoteUser({});
-			}); */
+				call.on('close', () => {
+					setRemoteUser({});
+				});
 
-			/* SOCKET.on('closeCall', () => {
-				SOCKET.off('closeCall');
-				call.close();
-				setRemoteUser({});
-			}); */
-		});
+				SOCKET.on('closeCall', () => {
+					/* SOCKET.off('closeCall'); */
+					call.close();
+					setRemoteUser({});
+				});
+			});
+		}
 	}, [PEER, SOCKET, stream]);
 
 	// * Cuando desee buscar una nueva conexión
