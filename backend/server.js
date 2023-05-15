@@ -22,7 +22,7 @@ io.on('connection', socket => {
 		console.log('----------------- WAITING EVENT --------------');
 		console.log('ID: ' + peerId + ' DEL SOCKET ' + socket.id);
 
-		/* socket.emit('closeCall'); */
+		socket.emit('closeCall');
 		users = users.filter(user => user.id !== socket.id);
 		console.table(users);
 
