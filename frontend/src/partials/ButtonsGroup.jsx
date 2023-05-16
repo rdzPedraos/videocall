@@ -4,8 +4,6 @@ import Button from '../components/Button';
 
 import {
 	PhoneXMarkIcon,
-	MicrophoneIcon,
-	VideoCameraIcon,
 	ArrowPathIcon,
 	PhoneIcon,
 } from '@heroicons/react/24/outline';
@@ -57,14 +55,6 @@ function ButtonsGroup({ className, ...props }) {
 						</Button>
 					</>
 				)}
-
-				{/* <Button>
-					<MicrophoneIcon className={iconSize} />
-				</Button>
-
-				<Button>
-					<VideoCameraIcon className={iconSize} />
-				</Button> */}
 			</div>
 		</section>
 	);

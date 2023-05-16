@@ -8,13 +8,10 @@ function setCallConfiguration(socket, call, setRemoteUser) {
 		err => console.log({ err })
 	);
 
-	call.on('close', () => {
-		console.log('CALL CLOSED*');
-		setRemoteUser(null);
-	});
-
 	socket.on('closeCall', () => {
+		console.log('CALL CLOSED*');
 		call.close();
+		setRemoteUser(null);
 	});
 }
 

@@ -29,8 +29,6 @@ io.on('connection', socket => {
 			io.to(id_2).emit('closeCall');
 
 			connections.splice(position, 1);
-		} else {
-			socket.emit('closeCall');
 		}
 	}
 
@@ -42,7 +40,7 @@ io.on('connection', socket => {
 		console.log('-| WAITING CALLED: ' + ID + ', PEERID: ' + peerId);
 		console.table(usersWaiting);
 
-		socket.emit('closeCall');
+		stopConnection();
 		usersWaiting = usersWaiting.filter(user => user.id !== ID);
 
 		if (usersWaiting.length !== 0) {
