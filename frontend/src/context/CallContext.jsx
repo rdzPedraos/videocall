@@ -1,16 +1,14 @@
-import { useState, createContext, useEffect, useMemo } from 'react';
+import { useState, createContext, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 
-import Peer from 'peerjs';
-import { io } from 'socket.io-client';
 import { setCallConfiguration } from './utils/videocall';
+import { SocketContext } from './SocketContext';
 
 const CallContext = createContext();
-const SOCKET = io('http://localhost:5001');
-const PEER = new Peer();
 
 function CallProvider({ children }) {
-	const [peerId, setPeerId] = useState(null);
+	const { PEER, SOCKET, peerId } = useContext(SocketContext);
+
 	const [stream, setStream] = useState(null);
 	const [remoteUser, setRemoteUser] = useState(null);
 
@@ -20,9 +18,7 @@ function CallProvider({ children }) {
 
 	// * Lógica, permitir acceso a cámara y video. Y setear los eventos base de la llamada.
 	useEffect(() => {
-		PEER.on('open', id => setPeerId(id));
-
-		if (navigator.mediaDevices) {
+		if (navigator.mediaDevices && PEER && SOCKET) {
 			navigator.mediaDevices
 				.getUserMedia({
 					audio: true,
@@ -50,25 +46,23 @@ function CallProvider({ children }) {
 					setMediaEnabled(false);
 				});
 		} else setMediaEnabled(false);
-	}, []);
+	}, [PEER, SOCKET]);
 
 	// * Cada que se actualice el usuario remoto:
 	useEffect(() => {
-		if (peerId && remoteUser === null) {
+		if (!stopStreaming && peerId && remoteUser === null && stream) {
+			console.log('WAITING FOR A CALLED*');
 			SOCKET.emit('waiting', { peerId });
 		}
-	}, [remoteUser, peerId]);
+	}, [remoteUser, peerId, stream, stopStreaming, SOCKET]);
 
 	// * Quita cualquier conexión con usuario remoto si está en true "stopStreaming"
 	useEffect(() => {
 		if (stopStreaming) {
-			//? Se deja como un objeto vacio para que no pueda emitir un nuevo evento waitiing en el useEffect superior.
-			SOCKET.emit('stopStreaming');
-			setRemoteUser({});
-		} else {
 			setRemoteUser(null);
+			SOCKET.emit('stopStreaming');
 		}
-	}, [stopStreaming]);
+	}, [SOCKET, stopStreaming]);
 
 	return (
 		<CallContext.Provider

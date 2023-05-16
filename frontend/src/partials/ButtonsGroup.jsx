@@ -18,7 +18,7 @@ function ButtonsGroup({ className, ...props }) {
 
 	return (
 		<section
-			className={`flex items-center p-5  rounded-2xl border-2 border-base-500 bg-base-500 bg-opacity-30 ${className}`}
+			className={`flex justify-center items-center p-5 rounded-2xl border-2 border-base-500 bg-base-500 bg-opacity-30 ${className}`}
 			{...props}
 		>
 			<div className='text-gray-500 max-w-[250px] px-3'>

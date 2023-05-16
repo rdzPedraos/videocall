@@ -15,15 +15,18 @@ function App() {
 		stopStreaming,
 	} = useContext(CallContext);
 
-	console.log(remoteUser);
-
 	return mediaEnabled ? (
 		<>
-			<section className='lg:flex lg:w-2/3 lg:min-h-[300px] lg:gap-4 m-auto mt-16'>
-				<Profile stream={localStream} mutedVideo className='flex-1' />
-
+			<section
+				className='
+					grid grid-rows-2 
+					h-full max-w-xl mx-auto 
+					lg:h-auto lg:pt-16 lg:gap-4
+					xl:grid-cols-2 xl:grid-rows-1 xl:max-w-none xl:mx-16
+				'
+			>
 				{stopStreaming ? (
-					<div className='flex-1 bg-base-500 rounded-md grid place-items-center'>
+					<div className='lg:order-2 bg-base-500 rounded-md grid place-items-center'>
 						<div className='flex flex-col items-center animate-pulse'>
 							<FaceFrownIcon className='w-20 h-20' />
 							<p>No estás en vivo</p>
@@ -32,16 +35,23 @@ function App() {
 				) : (
 					<Profile
 						mutedVideo
-						className='flex-1'
 						name={remoteUser?.name}
 						stream={remoteUser?.stream}
 						showName
+						className='lg:order-2'
 					/>
 				)}
+
+				<Profile stream={localStream} mutedVideo />
 			</section>
 
-			<section className='flex justify-center mt-16'>
-				<ButtonsGroup />
+			<section
+				className='
+				absolute bottom-0 right-0 left-0
+				lg:static lg:grid lg:place-items-center lg:mt-4 xl:mt-10
+			'
+			>
+				<ButtonsGroup className='rounded-none lg:rounded-2xl' />
 			</section>
 		</>
 	) : (

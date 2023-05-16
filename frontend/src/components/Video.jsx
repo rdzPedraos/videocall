@@ -13,7 +13,7 @@ function Video({ stream, className, ...props }) {
 
 	return (
 		<div
-			className={`grid h-full place-items-center rounded-lg overflow-hidden bg-base-500 ${className}`}
+			className={`grid h-full place-items-center rounded-lg overflow-hidden bg-base-500 border-2 border-base-700 ${className}`}
 		>
 			{stream ? (
 				<video
