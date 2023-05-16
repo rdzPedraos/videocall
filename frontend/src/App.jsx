@@ -34,10 +34,8 @@ function App() {
 					</div>
 				) : (
 					<Profile
-						mutedVideo
 						name={remoteUser?.name}
 						stream={remoteUser?.stream}
-						showName
 						className='lg:order-2'
 					/>
 				)}

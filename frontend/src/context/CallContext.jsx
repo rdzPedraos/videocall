@@ -18,7 +18,7 @@ function CallProvider({ children }) {
 
 	// * Lógica, permitir acceso a cámara y video. Y setear los eventos base de la llamada.
 	useEffect(() => {
-		if (navigator.mediaDevices && PEER && SOCKET) {
+		if (navigator.mediaDevices) {
 			navigator.mediaDevices
 				.getUserMedia({
 					audio: true,
@@ -26,27 +26,37 @@ function CallProvider({ children }) {
 				})
 				.then(stream => {
 					setStream(stream);
-
-					PEER.on('call', call => {
-						console.log('RECEIVING CALL*');
-
-						call.answer(stream);
-						setCallConfiguration(SOCKET, call, setRemoteUser);
-					});
-
-					SOCKET.on('callTo', ({ remoteId }) => {
-						console.log('CALL TO: ' + remoteId);
-
-						const call = PEER.call(remoteId, stream);
-						setCallConfiguration(SOCKET, call, setRemoteUser);
-					});
 				})
 				.catch(error => {
 					console.error(error);
 					setMediaEnabled(false);
 				});
 		} else setMediaEnabled(false);
-	}, [PEER, SOCKET]);
+	}, []);
+
+	useEffect(() => {
+		const handleCallTo = ({ remoteId }) => {
+			console.log('CALL TO: ' + remoteId);
+
+			const call = PEER.call(remoteId, stream);
+			setCallConfiguration(SOCKET, call, setRemoteUser);
+		};
+
+		const handleResponseCalled = call => {
+			console.log('RECEIVING CALL*');
+
+			call.answer(stream);
+			setCallConfiguration(SOCKET, call, setRemoteUser);
+		};
+
+		PEER.on('call', handleResponseCalled);
+		SOCKET.on('callTo', handleCallTo);
+
+		return () => {
+			PEER.off('call', handleResponseCalled);
+			SOCKET.off('callTo', handleCallTo);
+		};
+	}, [PEER, SOCKET, stream]);
 
 	// * Cada que se actualice el usuario remoto:
 	useEffect(() => {
@@ -59,7 +69,6 @@ function CallProvider({ children }) {
 	// * Quita cualquier conexión con usuario remoto si está en true "stopStreaming"
 	useEffect(() => {
 		if (stopStreaming) {
-			setRemoteUser(null);
 			SOCKET.emit('stopStreaming');
 		}
 	}, [SOCKET, stopStreaming]);
