@@ -2,6 +2,9 @@ const express = require('express');
 const http = require('http');
 const socket = require('socket.io');
 
+const EVENTS = require('./src/events');
+const User = require('./src/User');
+
 const app = express();
 const server = http.createServer(app);
 
@@ -13,52 +16,73 @@ const io = socket(server, {
 });
 
 let usersWaiting = [];
-const connections = [];
+const users = new Map();
 
-io.on('connection', socket => {
-	const ID = socket.id;
-	console.log('-| NEW CONNECTION : ' + ID);
+// Stops the connection of the specified user
+function stopConnection(user) {
+	if (!user.isConnected()) return;
 
-	function stopConnection() {
-		const position = connections.findIndex(conn => conn.some(id => id === ID));
+	const otherUser = users.get(user.connection);
+	user.disconnect();
+	otherUser.disconnect();
 
-		if (position !== -1) {
-			const [id_1, id_2] = connections[position];
+	// Emit the closeCall event to the two users
+	io.to(user.id).to(otherUser.id).emit(EVENTS.CLOSE_CALL);
 
-			io.to(id_1).emit('closeCall');
-			io.to(id_2).emit('closeCall');
-
-			connections.splice(position, 1);
-		}
+	// Add the other user back to the queue if they are still connected
+	if (io.sockets.sockets.has(otherUser.id)) {
+		usersWaiting.push(otherUser);
 	}
+}
 
-	socket.on('stopStreaming', () => {
-		stopConnection();
+io.on(EVENTS.CONNECTION, socket => {
+	const socketId = socket.id;
+	console.log(`-| NEW CONNECTION : ${socketId}`);
+
+	socket.on(EVENTS.STOP_STREAMING, () => {
+		if (!users.has(socketId)) return;
+		stopConnection(users.get(socketId));
 	});
 
-	socket.on('waiting', ({ peerId }) => {
-		console.log('-| WAITING CALLED: ' + ID + ', PEERID: ' + peerId);
-		console.table(usersWaiting);
+	socket.on(EVENTS.WAITING, ({ peerId }) => {
+		console.log(`-| WAITING CALLED: ${socketId}, PEERID: ${peerId}`);
 
-		stopConnection();
-		usersWaiting = usersWaiting.filter(user => user.id !== ID);
+		// If the user already exists, remove their waiting state
+		if (users.has(socketId)) {
+			usersWaiting = usersWaiting.filter(user => user.id !== socketId);
+		} else {
+			users.set(socketId, new User(socketId, peerId));
+		}
+
+		const user = users.get(socketId);
+		stopConnection(user);
 
 		if (usersWaiting.length !== 0) {
 			const remoteUser = usersWaiting.shift();
-
-			connections.push([remoteUser.id, ID]);
-			socket.emit('callTo', { remoteId: remoteUser.peerId });
+			user.connect(remoteUser);
+			socket.emit(EVENTS.CALL_TO, { remoteId: remoteUser.peerId });
 		} else {
-			usersWaiting.push({ id: ID, peerId });
+			usersWaiting.push(user);
 		}
 
+		console.log('USERS');
+		console.log(users);
+
+		console.log('WAITING QUEUE');
 		console.table(usersWaiting);
 	});
 
-	socket.on('disconnect', () => {
-		console.log('-| DISCONNECT: ' + ID);
-		usersWaiting = usersWaiting.filter(user => user.id !== ID);
-		stopConnection();
+	socket.on(EVENTS.DISCONNECT, () => {
+		console.log(`-| DISCONNECT: ${socketId}`);
+		if (!users.has(socketId)) return;
+		const user = users.get(socketId);
+
+		usersWaiting = usersWaiting.filter(
+			waitingUser => waitingUser.id !== user.id
+		);
+
+		stopConnection(user);
+		users.delete(socketId);
 	});
 });
 
