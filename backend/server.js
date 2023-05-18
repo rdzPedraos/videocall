@@ -8,9 +8,13 @@ const User = require('./src/User');
 const app = express();
 const server = http.createServer(app);
 
+// Servir archivos estáticos
+/*app.use(express.static('../public'));*/
+
 const io = socket(server, {
 	cors: {
-		origin: 'http://localhost:3000',
+		/*origin: 'http://localhost:3000',*/
+		origin: '*',
 		method: ['GET', 'POST'],
 	},
 });
