@@ -9,7 +9,7 @@ const app = express();
 const server = http.createServer(app);
 
 // Servir archivos estáticos
-app.use(express.static('../public'));
+/*app.use(express.static('../public'));*/
 
 const io = socket(server, {
 	cors: {
