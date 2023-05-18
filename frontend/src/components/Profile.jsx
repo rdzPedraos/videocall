@@ -4,7 +4,7 @@ import Video from './Video';
 
 function Profile({ stream, name, mutedVideo, showName, className }) {
 	return (
-		<div className={`relative ${className}`}>
+		<div className={`relative h-full lg:h-[400px] ${className}`}>
 			<Video muted={mutedVideo} stream={stream} />
 
 			{showName && (

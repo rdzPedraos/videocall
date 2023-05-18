@@ -10,7 +10,7 @@ function Layout({ children }) {
 			<SocketProvider>
 				<CallProvider>
 					<Header className='h-[100px]' />
-					<main className='flex-1 bg-base-900'>{children}</main>
+					<main className='h-[calc(100vh-80px)] bg-base-900'>{children}</main>
 				</CallProvider>
 			</SocketProvider>
 		</div>

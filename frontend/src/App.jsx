@@ -45,7 +45,7 @@ function App() {
 
 			<section
 				className='
-				absolute bottom-0 right-0 left-0
+				fixed bottom-0 right-0 left-0
 				lg:static lg:grid lg:place-items-center lg:mt-4 xl:mt-10
 			'
 			>
