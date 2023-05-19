@@ -48,14 +48,14 @@ io.on(EVENTS.CONNECTION, socket => {
 		stopConnection(users.get(socketId));
 	});
 
-	socket.on(EVENTS.WAITING, ({ peerId }) => {
+	socket.on(EVENTS.WAITING, ({ peerId, name }) => {
 		console.log(`-| WAITING CALLED: ${socketId}, PEERID: ${peerId}`);
 
 		// If the user already exists, remove their waiting state
 		if (users.has(socketId)) {
 			usersWaiting = usersWaiting.filter(user => user.id !== socketId);
 		} else {
-			users.set(socketId, new User(socketId, peerId));
+			users.set(socketId, new User(socketId, peerId, name));
 		}
 
 		const user = users.get(socketId);
@@ -64,7 +64,16 @@ io.on(EVENTS.CONNECTION, socket => {
 		if (usersWaiting.length !== 0) {
 			const remoteUser = usersWaiting.shift();
 			user.connect(remoteUser);
-			socket.emit(EVENTS.CALL_TO, { remoteId: remoteUser.peerId });
+
+			socket.emit(EVENTS.CALL_TO, {
+				remoteId: remoteUser.peerId,
+				name: remoteUser.name,
+			});
+
+			io.to(remoteUser.id).emit(EVENTS.CALL_FROM, {
+				remoteId: user.peerId,
+				name: user.name,
+			});
 		} else {
 			usersWaiting.push(user);
 		}
@@ -74,6 +83,22 @@ io.on(EVENTS.CONNECTION, socket => {
 
 		console.log('WAITING QUEUE');
 		console.table(usersWaiting);
+	});
+
+	socket.on(EVENTS.CHANGE_NAME, ({ newName }) => {
+		const socketId = socket.id;
+		console.log(`-| CHANGE_NAME CALLED: ${socketId}, NEW_NAME: ${newName}`);
+
+		if (!users.has(socketId)) return;
+		const user = users.get(socketId);
+
+		user.setName(newName); // update user's name
+
+		// emit the new name to the user it's connected to
+		const otherUser = users.get(user.connection);
+		if (otherUser) {
+			io.to(otherUser.id).emit(EVENTS.CHANGE_NAME, { newName });
+		}
 	});
 
 	socket.on(EVENTS.DISCONNECT, () => {
