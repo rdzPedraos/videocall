@@ -1,9 +1,9 @@
-function setCallConfiguration(socket, call, setRemoteUser) {
+function setCallConfiguration(socket, call, setRemoteUser, remoteName) {
 	call.on(
 		'stream',
 		stream => {
 			console.log('CALL CONNECTED*');
-			setRemoteUser(pre => ({ ...pre, stream }));
+			setRemoteUser(pre => ({ ...pre, stream, name: remoteName }));
 		},
 		err => console.log({ err })
 	);
