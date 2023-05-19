@@ -8,7 +8,7 @@ import {
 
 function Profile({ stream, name, mutedVideo, showVideo, showData, className }) {
 	return (
-		<div className={`relative h-full lg:h-[400px] ${className}`}>
+		<div className={`relative h-full lg:h-[500px] ${className}`}>
 			<Video showVideo={showVideo} muted={mutedVideo} stream={stream} />
 
 			{showData && (
