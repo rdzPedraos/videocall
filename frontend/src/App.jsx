@@ -37,6 +37,7 @@ function App() {
 						name={remoteUser?.name}
 						stream={remoteUser?.stream}
 						className='lg:order-2'
+						showName
 					/>
 				)}
 
