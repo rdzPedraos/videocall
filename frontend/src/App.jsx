@@ -9,7 +9,7 @@ import { FaceFrownIcon } from '@heroicons/react/24/outline';
 
 function App() {
 	const {
-		stream: localStream,
+		user: localUser,
 		remoteUser,
 		mediaEnabled,
 		stopStreaming,
@@ -34,14 +34,20 @@ function App() {
 					</div>
 				) : (
 					<Profile
+						className='lg:order-2'
 						name={remoteUser?.name}
 						stream={remoteUser?.stream}
-						className='lg:order-2'
-						showName
+						mutedVideo={!remoteUser?.audio}
+						showVideo={remoteUser?.video}
+						showData
 					/>
 				)}
 
-				<Profile stream={localStream} mutedVideo />
+				<Profile
+					stream={localUser.stream}
+					showVideo={localUser.video}
+					mutedVideo
+				/>
 			</section>
 
 			<section

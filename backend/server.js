@@ -33,11 +33,12 @@ function stopConnection(user) {
 
 	// Emit the closeCall event to the two users
 	io.to(user.id).to(otherUser.id).emit(EVENTS.CLOSE_CALL);
+}
 
-	// Add the other user back to the queue if they are still connected
-	if (io.sockets.sockets.has(otherUser.id)) {
-		usersWaiting.push(otherUser);
-	}
+//Help to data format
+function getDataAttributes(data) {
+	const { name, audio, video } = data;
+	return { name, audio, video };
 }
 
 io.on(EVENTS.CONNECTION, socket => {
@@ -49,14 +50,17 @@ io.on(EVENTS.CONNECTION, socket => {
 		stopConnection(users.get(socketId));
 	});
 
-	socket.on(EVENTS.WAITING, ({ peerId, name }) => {
+	socket.on(EVENTS.WAITING, ({ peerId, userData }) => {
 		console.log(`-| WAITING CALLED: ${socketId}, PEERID: ${peerId}`);
 
 		// If the user already exists, remove their waiting state
 		if (users.has(socketId)) {
 			usersWaiting = usersWaiting.filter(user => user.id !== socketId);
 		} else {
-			users.set(socketId, new User(socketId, peerId, name));
+			users.set(
+				socketId,
+				new User(socketId, peerId, getDataAttributes(userData))
+			);
 		}
 
 		const user = users.get(socketId);
@@ -66,15 +70,10 @@ io.on(EVENTS.CONNECTION, socket => {
 			const remoteUser = usersWaiting.shift();
 			user.connect(remoteUser);
 
-			socket.emit(EVENTS.CALL_TO, {
-				remoteId: remoteUser.peerId,
-				name: remoteUser.name,
-			});
+			socket.emit(EVENTS.CALL_TO, { remoteId: remoteUser.peerId });
 
-			io.to(remoteUser.id).emit(EVENTS.CALL_FROM, {
-				remoteId: user.peerId,
-				name: user.name,
-			});
+			socket.emit(EVENTS.CHANGE_DATA, getDataAttributes(remoteUser));
+			io.to(remoteUser.id).emit(EVENTS.CHANGE_DATA, getDataAttributes(user));
 		} else {
 			usersWaiting.push(user);
 		}
@@ -86,19 +85,23 @@ io.on(EVENTS.CONNECTION, socket => {
 		console.table(usersWaiting);
 	});
 
-	socket.on(EVENTS.CHANGE_NAME, ({ newName }) => {
-		const socketId = socket.id;
-		console.log(`-| CHANGE_NAME CALLED: ${socketId}, NEW_NAME: ${newName}`);
+	socket.on(EVENTS.CHANGE_DATA, userData => {
+		console.log(
+			`-| CHANGE_DATA CALLED: ${socketId}, NEW_DATA: ${JSON.stringify(
+				userData
+			)}`
+		);
 
 		if (!users.has(socketId)) return;
 		const user = users.get(socketId);
 
-		user.setName(newName); // update user's name
+		const data = getDataAttributes(userData);
+		user.setData(data); // update user's data
 
 		// emit the new name to the user it's connected to
 		const otherUser = users.get(user.connection);
 		if (otherUser) {
-			io.to(otherUser.id).emit(EVENTS.CHANGE_NAME, { newName });
+			io.to(otherUser.id).emit(EVENTS.CHANGE_DATA, data);
 		}
 	});
 

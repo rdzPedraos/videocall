@@ -1,13 +1,17 @@
 import PropTypes from 'prop-types';
 
 import Video from './Video';
+import {
+	SpeakerXMarkIcon,
+	VideoCameraSlashIcon,
+} from '@heroicons/react/24/outline';
 
-function Profile({ stream, name, mutedVideo, showName, className }) {
+function Profile({ stream, name, mutedVideo, showVideo, showData, className }) {
 	return (
 		<div className={`relative h-full lg:h-[400px] ${className}`}>
-			<Video muted={mutedVideo} stream={stream} />
+			<Video showVideo={showVideo} muted={mutedVideo} stream={stream} />
 
-			{showName && (
+			{showData && (
 				<div
 					className='absolute bottom-0 w-full py-4 px-6'
 					style={{
@@ -16,7 +20,15 @@ function Profile({ stream, name, mutedVideo, showName, className }) {
 						borderRadius: '0 0 0.5rem 0.5rem',
 					}}
 				>
-					{name || 'Buscando...'}
+					{name ? (
+						<>
+							<span>{name}</span>
+							{mutedVideo && <SpeakerXMarkIcon className='w-10 h-10' />}
+							{!showVideo && <VideoCameraSlashIcon className='w-10 h-10' />}
+						</>
+					) : (
+						<span>Buscando...</span>
+					)}
 				</div>
 			)}
 		</div>
@@ -26,15 +38,19 @@ function Profile({ stream, name, mutedVideo, showName, className }) {
 Profile.propTypes = {
 	name: PropTypes.string,
 	stream: PropTypes.object,
+
 	mutedVideo: PropTypes.bool,
-	showName: PropTypes.bool,
+	showVideo: PropTypes.bool,
+	showData: PropTypes.bool,
+
 	className: PropTypes.string,
 };
 
 Profile.defaultProps = {
-	mutedVideo: false,
 	className: '',
-	showName: false,
+	mutedVideo: false,
+	noVideo: false,
+	showData: false,
 };
 
 export default Profile;

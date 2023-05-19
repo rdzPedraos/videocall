@@ -6,22 +6,34 @@ import {
 	PhoneXMarkIcon,
 	ArrowPathIcon,
 	PhoneIcon,
+	MicrophoneIcon,
+	VideoCameraIcon,
+	VideoCameraSlashIcon,
+	SpeakerXMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useContext } from 'react';
 import { CallContext } from '../context/CallContext';
 
 function ButtonsGroup({ className, ...props }) {
-	const { remoteUser, setRemoteUser, stopStreaming, setStopStreaming } =
-		useContext(CallContext);
+	const {
+		user,
+		setUser,
+
+		remoteUser,
+		setRemoteUser,
+
+		stopStreaming,
+		setStopStreaming,
+	} = useContext(CallContext);
 
 	const iconSize = 'w-6 h-6';
 
 	return (
 		<section
-			className={`flex justify-center items-center p-5 rounded-2xl border-2 border-base-500 bg-base-500 bg-opacity-30 ${className}`}
+			className={`flex justify-center items-center p-3 lg:p-5 rounded-2xl border-2 border-base-500 bg-base-500 bg-opacity-30 ${className}`}
 			{...props}
 		>
-			<div className='text-gray-500 max-w-[250px] px-3'>
+			<div className='text-white max-w-[250px] lg:px-3'>
 				{stopStreaming ? (
 					<>
 						<p className='font-bold'> No estás en vivo! </p>
@@ -55,6 +67,26 @@ function ButtonsGroup({ className, ...props }) {
 						</Button>
 					</>
 				)}
+
+				<Button
+					onClick={() => setUser(user => ({ ...user, audio: !user.audio }))}
+				>
+					{user.audio ? (
+						<MicrophoneIcon className={iconSize} />
+					) : (
+						<SpeakerXMarkIcon className={iconSize} />
+					)}
+				</Button>
+
+				<Button
+					onClick={() => setUser(user => ({ ...user, video: !user.video }))}
+				>
+					{user.video ? (
+						<VideoCameraIcon className={iconSize} />
+					) : (
+						<VideoCameraSlashIcon className={iconSize} />
+					)}
+				</Button>
 			</div>
 		</section>
 	);

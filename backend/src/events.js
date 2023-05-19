@@ -8,6 +8,5 @@ module.exports = {
 	CALL_TO: 'callTo',
 	CLOSE_CALL: 'closeCall',
 
-	CHANGE_NAME: 'changeName',
-	CALL_FROM: 'callFrom',
+	CHANGE_DATA: 'changeData',
 };

@@ -9,10 +9,14 @@ const CallContext = createContext();
 function CallProvider({ children }) {
 	const { PEER, SOCKET, peerId } = useContext(SocketContext);
 
-	const [stream, setStream] = useState(null);
+	const [user, setUser] = useState({
+		name: 'Guest',
+		stream: null,
+		audio: true,
+		video: true,
+	});
 	const [remoteUser, setRemoteUser] = useState(null);
 
-	const [name, setName] = useState('Guest');
 	const [stopStreaming, setStopStreaming] = useState(false);
 	const [mediaEnabled, setMediaEnabled] = useState(true);
 
@@ -25,7 +29,7 @@ function CallProvider({ children }) {
 					video: { width: 1280, height: 1280 },
 				})
 				.then(stream => {
-					setStream(stream);
+					setUser(user => ({ ...user, stream }));
 				})
 				.catch(error => {
 					console.error(error);
@@ -36,49 +40,48 @@ function CallProvider({ children }) {
 
 	// * Handle in and out calls events
 	useEffect(() => {
-		let callerName = null;
-
-		const handleCallFrom = ({ callerId, name }) => {
-			callerName = name;
-		};
-
-		const handleCallTo = ({ remoteId, name }) => {
-			const call = PEER.call(remoteId, stream);
-			setCallConfiguration(SOCKET, call, setRemoteUser, name);
-		};
-
 		const handleCall = call => {
-			call.answer(stream);
-			setCallConfiguration(SOCKET, call, setRemoteUser, callerName);
+			call.answer(user.stream);
+			setCallConfiguration(SOCKET, call, setRemoteUser);
 		};
 
-		const handleNameChange = ({ newName }) => {
-			setRemoteUser(user => ({ ...user, name: newName }));
+		const handleCallTo = ({ remoteId }) => {
+			const call = PEER.call(remoteId, user.stream);
+			setCallConfiguration(SOCKET, call, setRemoteUser);
+		};
+
+		const handleChangeData = data => {
+			console.log(data);
+			setRemoteUser(user => ({ ...user, ...data }));
 		};
 
 		PEER.on('call', handleCall);
-
-		SOCKET.on('callFrom', handleCallFrom);
 		SOCKET.on('callTo', handleCallTo);
-
-		// * Every time the server sends a name change:
-		SOCKET.on('changeName', handleNameChange);
+		SOCKET.on('changeData', handleChangeData);
 
 		return () => {
 			PEER.off('call', handleCall);
-			SOCKET.off('callFrom', handleCallFrom);
 			SOCKET.off('callTo', handleCallTo);
-			SOCKET.off('changeName', handleNameChange);
+			SOCKET.off('changeData', handleChangeData);
 		};
-	}, [PEER, SOCKET, stream]);
+	}, [PEER, SOCKET, user.stream]);
+
+	// * Every time the name, audio or video change:
+	useEffect(() => {
+		SOCKET.emit('changeData', {
+			name: user.name,
+			audio: user.audio,
+			video: user.video,
+		});
+	}, [user.name, user.audio, user.video, SOCKET]);
 
 	// * Every time the remoteUser is null send a waiting event to the server
 	useEffect(() => {
-		if (!stopStreaming && peerId && stream && remoteUser === null) {
+		if (remoteUser === null && !stopStreaming && peerId && user.stream) {
 			console.log('WAITING FOR A CALL*');
-			SOCKET.emit('waiting', { peerId, name });
+			SOCKET.emit('waiting', { peerId, userData: user });
 		}
-	}, [remoteUser, peerId, stream, stopStreaming, name, SOCKET]);
+	}, [remoteUser, peerId, stopStreaming, user, mediaEnabled, SOCKET]);
 
 	// * When stopStreaming is true, send a stopStreaming event to the server to stop any connection
 	useEffect(() => {
@@ -87,17 +90,11 @@ function CallProvider({ children }) {
 		}
 	}, [SOCKET, stopStreaming]);
 
-	// * Every time the name changes:
-	useEffect(() => {
-		SOCKET.emit('changeName', { newName: name });
-	}, [name, SOCKET]);
-
 	return (
 		<CallContext.Provider
 			value={{
-				name,
-				setName,
-				stream,
+				user,
+				setUser,
 
 				remoteUser,
 				setRemoteUser,

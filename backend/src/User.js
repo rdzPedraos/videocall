@@ -1,8 +1,12 @@
 class User {
-	constructor(id, peerId, name) {
+	constructor(id, peerId, { name, audio = true, video = true }) {
 		this.id = id;
 		this.peerId = peerId;
+
 		this.name = name;
+		this.video = video;
+		this.audio = audio;
+
 		this.connection = null;
 	}
 
@@ -21,6 +25,20 @@ class User {
 
 	setName(name) {
 		this.name = name;
+	}
+
+	setAudio(audio) {
+		this.audio = audio;
+	}
+
+	setVideo(video) {
+		this.video = video;
+	}
+
+	setData({ name, audio, video }) {
+		if (name !== undefined) this.setName(name);
+		if (audio !== undefined) this.setAudio(audio);
+		if (video !== undefined) this.setVideo(video);
 	}
 }
 
