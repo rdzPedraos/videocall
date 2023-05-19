@@ -38,13 +38,13 @@ function CallProvider({ children }) {
 	useEffect(() => {
 		let callerName = null;
 
+		const handleCallFrom = ({ callerId, name }) => {
+			callerName = name;
+		};
+
 		const handleCallTo = ({ remoteId, name }) => {
 			const call = PEER.call(remoteId, stream);
 			setCallConfiguration(SOCKET, call, setRemoteUser, name);
-		};
-
-		const handleCallFrom = ({ callerId, name }) => {
-			callerName = name;
 		};
 
 		const handleCall = call => {
@@ -52,25 +52,33 @@ function CallProvider({ children }) {
 			setCallConfiguration(SOCKET, call, setRemoteUser, callerName);
 		};
 
+		const handleNameChange = ({ newName }) => {
+			setRemoteUser(user => ({ ...user, name: newName }));
+		};
+
 		PEER.on('call', handleCall);
 
 		SOCKET.on('callFrom', handleCallFrom);
 		SOCKET.on('callTo', handleCallTo);
 
+		// * Every time the server sends a name change:
+		SOCKET.on('changeName', handleNameChange);
+
 		return () => {
 			PEER.off('call', handleCall);
 			SOCKET.off('callFrom', handleCallFrom);
 			SOCKET.off('callTo', handleCallTo);
+			SOCKET.off('changeName', handleNameChange);
 		};
 	}, [PEER, SOCKET, stream]);
 
 	// * Every time the remoteUser is null send a waiting event to the server
 	useEffect(() => {
-		if (!stopStreaming && peerId && remoteUser === null && stream) {
+		if (!stopStreaming && peerId && stream && remoteUser === null) {
 			console.log('WAITING FOR A CALL*');
 			SOCKET.emit('waiting', { peerId, name });
 		}
-	}, [remoteUser, peerId, stream, stopStreaming, SOCKET]);
+	}, [remoteUser, peerId, stream, stopStreaming, name, SOCKET]);
 
 	// * When stopStreaming is true, send a stopStreaming event to the server to stop any connection
 	useEffect(() => {
@@ -84,28 +92,17 @@ function CallProvider({ children }) {
 		SOCKET.emit('changeName', { newName: name });
 	}, [name, SOCKET]);
 
-	// * Every time the server sends a name change:
-	useEffect(() => {
-		const handleNameChange = ({ newName }) => {
-			setRemoteUser(user => ({ ...user, name: newName }));
-		};
-
-		SOCKET.on('changeName', handleNameChange);
-
-		return () => {
-			SOCKET.off('changeName', handleNameChange);
-		};
-	}, [SOCKET]);
-
 	return (
 		<CallContext.Provider
 			value={{
 				name,
 				setName,
 				stream,
+
 				remoteUser,
-				mediaEnabled,
 				setRemoteUser,
+
+				mediaEnabled,
 				stopStreaming,
 				setStopStreaming,
 			}}
