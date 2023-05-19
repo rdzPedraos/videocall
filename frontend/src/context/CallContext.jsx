@@ -16,7 +16,7 @@ function CallProvider({ children }) {
 	const [stopStreaming, setStopStreaming] = useState(false);
 	const [mediaEnabled, setMediaEnabled] = useState(true);
 
-	// * Lógica, permitir acceso a cámara y video. Y setear los eventos base de la llamada.
+	// * Allow access to camera and video. And set the base events of the call.
 	useEffect(() => {
 		if (navigator.mediaDevices) {
 			navigator.mediaDevices
@@ -34,44 +34,68 @@ function CallProvider({ children }) {
 		} else setMediaEnabled(false);
 	}, []);
 
+	// * Handle in and out calls events
 	useEffect(() => {
-		const handleCallTo = ({ remoteId }) => {
-			console.log('CALL TO: ' + remoteId);
+		let callerName = null;
 
+		const handleCallTo = ({ remoteId, name }) => {
 			const call = PEER.call(remoteId, stream);
-			setCallConfiguration(SOCKET, call, setRemoteUser);
+			setCallConfiguration(SOCKET, call, setRemoteUser, name);
 		};
 
-		const handleResponseCalled = call => {
-			console.log('RECEIVING CALL*');
+		const handleCallFrom = ({ callerId, name }) => {
+			callerName = name;
+		};
 
+		const handleCall = call => {
 			call.answer(stream);
-			setCallConfiguration(SOCKET, call, setRemoteUser);
+			setCallConfiguration(SOCKET, call, setRemoteUser, callerName);
 		};
 
-		PEER.on('call', handleResponseCalled);
+		PEER.on('call', handleCall);
+
+		SOCKET.on('callFrom', handleCallFrom);
 		SOCKET.on('callTo', handleCallTo);
 
 		return () => {
-			PEER.off('call', handleResponseCalled);
+			PEER.off('call', handleCall);
+			SOCKET.off('callFrom', handleCallFrom);
 			SOCKET.off('callTo', handleCallTo);
 		};
 	}, [PEER, SOCKET, stream]);
 
-	// * Cada que se actualice el usuario remoto:
+	// * Every time the remoteUser is null send a waiting event to the server
 	useEffect(() => {
 		if (!stopStreaming && peerId && remoteUser === null && stream) {
-			console.log('WAITING FOR A CALLED*');
-			SOCKET.emit('waiting', { peerId });
+			console.log('WAITING FOR A CALL*');
+			SOCKET.emit('waiting', { peerId, name });
 		}
 	}, [remoteUser, peerId, stream, stopStreaming, SOCKET]);
 
-	// * Quita cualquier conexión con usuario remoto si está en true "stopStreaming"
+	// * When stopStreaming is true, send a stopStreaming event to the server to stop any connection
 	useEffect(() => {
 		if (stopStreaming) {
 			SOCKET.emit('stopStreaming');
 		}
 	}, [SOCKET, stopStreaming]);
+
+	// * Every time the name changes:
+	useEffect(() => {
+		SOCKET.emit('changeName', { newName: name });
+	}, [name, SOCKET]);
+
+	// * Every time the server sends a name change:
+	useEffect(() => {
+		const handleNameChange = ({ newName }) => {
+			setRemoteUser(user => ({ ...user, name: newName }));
+		};
+
+		SOCKET.on('changeName', handleNameChange);
+
+		return () => {
+			SOCKET.off('changeName', handleNameChange);
+		};
+	}, [SOCKET]);
 
 	return (
 		<CallContext.Provider
