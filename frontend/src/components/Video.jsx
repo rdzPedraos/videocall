@@ -20,7 +20,7 @@ function Video({ stream, showVideo, className, ...props }) {
 			{stream ? (
 				showVideo ? (
 					<video
-						className='w-full h-full object-cover'
+						className='h-full object-cover'
 						playsInline
 						autoPlay
 						ref={videoRef}
