@@ -1,7 +1,8 @@
 class User {
-	constructor(id, peerId) {
+	constructor(id, peerId, name) {
 		this.id = id;
 		this.peerId = peerId;
+		this.name = name;
 		this.connection = null;
 	}
 
@@ -16,6 +17,10 @@ class User {
 
 	disconnect() {
 		this.connection = null;
+	}
+
+	setName(name) {
+		this.name = name;
 	}
 }
 
